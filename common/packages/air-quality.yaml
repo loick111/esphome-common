@@ -1,0 +1,110 @@
+# Air Quality Package (IKEA Vindriktning)
+# Pure business logic for environmental sensors and calculations
+# No hardware configuration (ESP32 variant/framework) - handled by instance files
+
+substitutions:
+  # Device Identity Defaults
+  devicename: air-quality-${uniqueid}
+
+esphome:
+  project:
+    name: 'loick111.air-quality'
+    version: 'v1'
+
+number:
+  - platform: template
+    entity_category: config
+    id: config_altitude_m
+    name: 'Altitude'
+    unit_of_measurement: 'm'
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    min_value: 0
+    max_value: 2000
+    step: 1
+  - platform: template
+    entity_category: config
+    id: config_offset_temperature_c
+    name: 'Temperature Offset'
+    unit_of_measurement: '°C'
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    min_value: -10
+    max_value: 10
+    step: 0.01
+  - platform: template
+    entity_category: config
+    id: config_offset_humidity_percent
+    name: 'Humidity Offset'
+    unit_of_measurement: '%'
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    min_value: -20
+    max_value: 20
+    step: 0.01
+  - platform: template
+    entity_category: config
+    id: config_offset_pressure_hpa
+    name: 'Pressure Offset'
+    unit_of_measurement: 'hPa'
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    min_value: -20
+    max_value: 20
+    step: 0.1
+
+sensor:
+  - platform: bme280_i2c
+    address: 0x76
+    temperature:
+      id: bme280_temperature
+      name: 'Temperature'
+      filters:
+        - lambda: |-
+            return x + id(config_offset_temperature_c).state;
+    pressure:
+      id: bme280_pressure
+      name: 'Pressure'
+      filters:
+        - lambda: |-
+            return x + id(config_offset_pressure_hpa).state;
+    humidity:
+      id: bme280_humidity
+      name: 'Humidity'
+      filters:
+        - lambda: |-
+            return x + id(config_offset_humidity_percent).state;
+    update_interval: 60s
+
+  - platform: absolute_humidity
+    name: 'Absolute Humidity'
+    temperature: bme280_temperature
+    humidity: bme280_humidity
+
+  - platform: template
+    name: 'Dew Point'
+    lambda: |-
+      return (243.5*(log(id(bme280_humidity).state/100)+((17.67*id(bme280_temperature).state)/
+      (243.5+id(bme280_temperature).state)))/(17.67-log(id(bme280_humidity).state/100)-
+      ((17.67*id(bme280_temperature).state)/(243.5+id(bme280_temperature).state))));
+    unit_of_measurement: °C
+    icon: 'mdi:thermometer-alert'
+
+  - platform: template
+    name: 'Sea level pressure'
+    lambda: |-
+      return id(bme280_pressure).state / powf(1 - ((0.0065 * id(config_altitude_m).state) /
+        (id(bme280_temperature).state + (0.0065 * id(config_altitude_m).state) + 273.15)), 5.257); // in hPa
+    update_interval: 15s
+    unit_of_measurement: 'hPa'
+
+  - platform: pm1006
+    pm_2_5:
+      name: 'PM2.5'
+      unit_of_measurement: 'µg/m³'
+      filters:
+        - throttle_average: 60s

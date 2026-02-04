@@ -1,0 +1,77 @@
+# Infrastructure & Core Services
+# Base configuration: Logging, API, OTA, Web Server, WiFi AP, Diagnostics
+# No hardware configuration (ESP32 variant/framework) - handled by boards
+# No WiFi Station credentials - use wifi mixin or override in instances
+
+substitutions:
+  # Logging level (can be overridden in instances)
+  log_level: INFO
+  
+  # Web Server credentials (can be overridden in instances)
+  web_username: admin
+  web_password: !secret web_password
+
+esphome:
+  name: ${devicename}
+
+logger:
+  level: ${log_level}
+
+api:
+  encryption:
+    key: ${api_key}
+
+ota:
+  - platform: esphome
+    password: ${ota_password}
+
+web_server:
+  port: 80
+  version: 3
+  auth:
+    username: ${web_username}
+    password: ${web_password}
+
+wifi:
+  domain: .local
+  power_save_mode: none
+
+  ap:
+    ssid: '${devicename}'
+    password: !secret wifi_captive
+
+captive_portal:
+safe_mode:
+
+button:
+  - platform: restart
+    name: 'Restart'
+  - platform: factory_reset
+    name: 'Factory Reset'
+  - platform: safe_mode
+    name: 'Safe Mode'
+
+sensor:
+  # Diagnostics
+  - platform: uptime
+    name: 'Uptime'
+    entity_category: diagnostic
+  - platform: wifi_signal
+    name: 'WiFi Signal'
+    update_interval: 60s
+    entity_category: diagnostic
+  - platform: internal_temperature
+    name: 'Internal Temperature'
+    entity_category: diagnostic
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: 'IP Address'
+      entity_category: diagnostic
+    bssid:
+      name: 'WiFi BSSID'
+      entity_category: diagnostic
+    ssid:
+      name: 'WiFi SSID'
+      entity_category: diagnostic

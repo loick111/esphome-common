@@ -1,0 +1,15 @@
+substitutions:
+  uniqueid: water-meter-001
+  api_key: 'oFgQXa4OetRL4g0BKFQjTaSnKXQx/oUYwTRJJpF4pSY='
+  ota_password: 'test_ota_pass'
+  pulse_gpio: GPIO4
+  pulse_timeout: 10s
+
+packages:
+  board: !include ../common/boards/esp32dev.yaml
+  base: !include ../common/base.yaml
+  wifi: !include ../common/mixins/wifi.yaml
+  water_meter: !include ../common/packages/water-meter.yaml
+
+esphome:
+  name: ${devicename}

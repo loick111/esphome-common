@@ -1,0 +1,28 @@
+substitutions:
+  uniqueid: air-01
+  devicename: vindriktning-${uniqueid}
+  api_key: 'oFgQXa4OetRL4g0BKFQjTaSnKXQx/oUYwTRJJpF4pSY='
+  ota_password: 'test_ota_pass'
+
+packages:
+  board: !include ../common/boards/esp32s3-devkit.yaml
+  base: !include ../common/base.yaml
+  wifi: !include ../common/mixins/wifi.yaml
+  air_quality: !include ../common/packages/air-quality.yaml
+  ble_proxy: !include ../common/mixins/ble-proxy.yaml
+
+esphome:
+  name: ${devicename}
+
+# Hardware: I2C bus for BME280 sensor
+i2c:
+  sda: ${pin_i2c_sda}
+  scl: ${pin_i2c_scl}
+  scan: true
+
+# Hardware: UART for PM1006 sensor
+uart:
+  - id: uart_pm1006
+    tx_pin: ${pin_uart_tx}
+    rx_pin: ${pin_uart_rx}
+    baud_rate: 9600

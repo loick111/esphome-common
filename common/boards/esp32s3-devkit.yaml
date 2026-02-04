@@ -1,0 +1,25 @@
+# ESP32-S3 DevKit Board Preset
+# ESP32-S3-DevKitC-1 development board
+# Provides standardized GPIO pin mappings optimized for S3
+
+esp32:
+  variant: esp32s3
+  board: esp32s3-devkitc-1
+  framework:
+    type: esp-idf
+
+substitutions:
+  # Standard I2C pins (easily customizable in instances)
+  pin_i2c_sda: GPIO8
+  pin_i2c_scl: GPIO9
+
+  # Standard UART pins
+  pin_uart_tx: GPIO17
+  pin_uart_rx: GPIO16
+
+  # Status LED
+  pin_status_led: GPIO2
+
+  # Extra GPIO slots for future use
+  pin_extra_1: GPIO12
+  pin_extra_2: GPIO13

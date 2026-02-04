@@ -1,0 +1,13 @@
+# BLE Proxy Mixin
+# Adds Bluetooth Low Energy tracking and proxy capabilities
+# Can be mixed into any device with an ESP32 that supports BLE
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 30ms
+    window: 30ms
+    active: True
+
+bluetooth_proxy:
+  active: true
+  connection_slots: 3

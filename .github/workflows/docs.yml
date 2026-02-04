@@ -1,0 +1,65 @@
+name: Deploy Documentation to GitHub Pages
+
+# DISABLED: This workflow is disabled for private repository
+# To re-enable, remove this comment and uncomment the 'on' trigger below
+
+# on:
+#   push:
+#     branches:
+#       - master
+#     paths:
+#       - 'docs/**'
+#       - 'mkdocs.yml'
+#       - '.github/workflows/docs.yml'
+#   pull_request:
+#     branches:
+#       - master
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install mkdocs-material
+
+      - name: Build documentation
+        run: mkdocs build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: 'site'
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

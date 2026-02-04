@@ -1,0 +1,15 @@
+substitutions:
+  uniqueid: generic-01
+  devicename: generic-device-${uniqueid}
+  api_key: 'oFgQXa4OetRL4g0BKFQjTaSnKXQx/oUYwTRJJpF4pSY='
+  ota_password: 'test_ota_password_123'
+
+packages:
+  board: !include ../common/boards/esp32dev.yaml
+  base: !include ../common/base.yaml
+
+esphome:
+  name: ${devicename}
+  project:
+    name: 'loick111.generic-device'
+    version: 'v1'

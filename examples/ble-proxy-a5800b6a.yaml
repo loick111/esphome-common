@@ -1,0 +1,17 @@
+substitutions:
+  uniqueid: a5800b6a
+  devicename: ble-proxy-${uniqueid}
+  api_key: 'oFgQXa4OetRL4g0BKFQjTaSnKXQx/oUYwTRJJpF4pSY='
+  ota_password: '83fe5fc710ac482f2d699536a0942c03'
+
+packages:
+  board: !include ../common/boards/esp32s3-devkit.yaml
+  base: !include ../common/base.yaml
+  wifi: !include ../common/mixins/wifi.yaml
+  ble_proxy: !include ../common/mixins/ble-proxy.yaml
+
+esphome:
+  name: ${devicename}
+  project:
+    name: 'loick111.ble-proxy'
+    version: 'v1'

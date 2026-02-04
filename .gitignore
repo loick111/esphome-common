@@ -1,0 +1,48 @@
+# ESPHome build artifacts
+build/
+.esphome/
+
+# Documentation build output
+site/
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Secrets and credentials
+secrets.yaml
+!examples/secrets.yaml
+
+# Test artifacts
+.pytest_cache/
+*.coverage
+
+# OS-specific
+Thumbs.db
+.directory
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Dependencies
+pip-log.txt
+pip-delete-this-directory.txt

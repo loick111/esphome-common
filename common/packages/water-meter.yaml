@@ -1,0 +1,156 @@
+# Water Meter Package
+# Pure business logic for water flow measurement and consumption tracking
+# No hardware configuration (ESP32 variant/framework) - handled by instance files
+
+substitutions:
+  # Device Identity Defaults
+  devicename: water-meter-${uniqueid}
+
+  # Define defaults - override in instance files
+  pulse_gpio: GPIO18
+  pulse_timeout: 20s
+
+esphome:
+  project:
+    name: 'loick111.water-meter'
+    version: 'v1'
+
+globals:
+  - id: prev_flow_l_min
+    type: float
+    initial_value: '0.0'
+
+number:
+  # 1. Liters Per Pulse
+  - platform: template
+    name: 'Liters Per Pulse'
+    id: conversion_factor
+    optimistic: true
+    min_value: 0.001
+    max_value: 1000.0
+    step: 0.001
+    initial_value: 1.0
+    restore_value: yes
+    unit_of_measurement: 'L/pulse'
+    entity_category: config
+    mode: BOX
+
+  # 2. Internal Storage
+  - platform: template
+    name: 'Total Water Stored (Internal)'
+    id: total_water_storage_liters
+    unit_of_measurement: 'L'
+    restore_value: yes
+    initial_value: 0
+    min_value: 0
+    max_value: 100000000
+    step: 0.1
+    optimistic: true
+    entity_category: diagnostic
+
+  - platform: template
+    name: 'Flow Smoothing Factor'
+    id: smoothing_alpha
+    optimistic: true
+    min_value: 0.1
+    max_value: 1.0
+    step: 0.1
+    initial_value: 0.3
+    restore_value: yes
+    icon: 'mdi:chart-bell-curve-cumulative'
+    entity_category: config
+    mode: SLIDER
+
+# ---------------------------------------------------------
+# SENSORS
+# ---------------------------------------------------------
+sensor:
+  # 1. RAW Pulse Meter (Engine)
+  - platform: pulse_meter
+    pin:
+      number: ${pulse_gpio}
+      mode: INPUT_PULLUP
+    id: main_pulse_meter
+    timeout: ${pulse_timeout}
+    internal_filter: 100ms
+    internal_filter_mode: PULSE
+    name: 'Internal Raw Pulses'
+    internal: true
+
+    # Total Counter Logic
+    total:
+      name: 'Total Pulses (Diagnostic)'
+      entity_category: diagnostic
+      filters:
+        - lambda: |-
+            float batch_liters = x * id(conversion_factor).state;
+            float current_total = id(total_water_storage_liters).state;
+            id(total_water_storage_liters).make_call().set_value(current_total + batch_liters).perform();
+            return x;
+
+  # 2. Rate Sensor A: Liters per Minute (L/min)
+  - platform: template
+    name: 'Water Flow Rate (L/min)'
+    unit_of_measurement: 'L/min'
+    icon: 'mdi:speedometer'
+    accuracy_decimals: 1
+    update_interval: 2s
+    lambda: |-
+      float raw_pulses = id(main_pulse_meter).state;
+      float alpha = id(smoothing_alpha).state;
+
+      // 1. Calculate current raw L/min
+      float current_l_min = raw_pulses * id(conversion_factor).state;
+
+      // 2. HARD RESET: If raw is 0, force output to 0 immediately (bypass smoothing)
+      if (raw_pulses == 0.0) {
+        id(prev_flow_l_min) = 0.0;
+        return 0.0;
+      }
+
+      // 3. Manual Exponential Moving Average
+      // New = (Current * alpha) + (Prev * (1 - alpha))
+      float smoothed = (current_l_min * alpha) + (id(prev_flow_l_min) * (1.0 - alpha));
+
+      // 4. Save for next time
+      id(prev_flow_l_min) = smoothed;
+
+      return smoothed;
+
+  # 3. Rate Sensor B: Cubic Meters per Hour (m³/h)
+  - platform: template
+    name: 'Water Flow Rate (m³/h)'
+    unit_of_measurement: 'm³/h'
+    icon: 'mdi:gauge'
+    accuracy_decimals: 3
+    update_interval: 2s
+    lambda: |-
+      float smoothed_l_min = id(prev_flow_l_min);
+      return (smoothed_l_min * 60.0) / 1000.0;
+
+  # 4. Total Consumption (m³)
+  - platform: template
+    name: 'Total Water Consumption'
+    id: water_total_m3
+    unit_of_measurement: 'm³'
+    device_class: water
+    state_class: total_increasing
+    icon: 'mdi:water-pump'
+    accuracy_decimals: 3
+    lambda: |-
+      return id(total_water_storage_liters).state / 1000.0;
+    update_interval: 5s
+
+# ---------------------------------------------------------
+# ACTIONS
+# ---------------------------------------------------------
+button:
+  - platform: template
+    name: 'Reset Water Counter'
+    icon: 'mdi:restart'
+    entity_category: config
+    on_press:
+      then:
+        - number.set:
+            id: total_water_storage_liters
+            value: 0
