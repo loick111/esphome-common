@@ -5,7 +5,7 @@ substitutions:
   ota_password: 'test_ota_pass'
 
 packages:
-  board: !include ../common/boards/esp32s3-devkit.yaml
+  board: !include ../common/boards/esp32s3.yaml
   base: !include ../common/base.yaml
   wifi: !include ../common/mixins/wifi.yaml
   air_quality: !include ../common/packages/air-quality.yaml
