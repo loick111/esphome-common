@@ -14,9 +14,9 @@ This repository follows a **strict 5-layer architecture**:
 | **Packages** | `common/packages/` | Core business logic (Sensors, automations) |
 | **Instances** | `examples/` | Device composition and identity |
 
-## Quick Start
+## Usage
 
-### 1. Create a Device Configuration
+### Local Usage (Quick Start)
 
 Create an instance file that composes layers:
 
@@ -37,10 +37,47 @@ esphome:
   name: ${devicename}
 ```
 
-### 2. Validate Configuration
+### External Usage (Remote Packages)
 
-```bash
-esphome config examples/my-device.yaml
+You can use these components in devices outside this repository using the `remote` package feature. This allows you to maintain a separate device configuration while leveraging the shared logic.
+
+**Prerequisites:**
+1. Define **Identity & Secrets** locally (substitutions).
+2. Define **Hardware** locally (or import a board preset).
+3. Import **Base & Logic** from the remote repo.
+
+```yaml
+substitutions:
+  # Device Identity
+  uniqueid: "device-001"
+  devicename: my-device-${uniqueid}
+
+  # Secrets (Must be in your local secrets.yaml)
+  wifi_ssid: !secret wifi_ssid
+  wifi_password: !secret wifi_password
+  web_password: !secret web_password
+  wifi_captive: !secret wifi_captive
+
+  # Security
+  api_key: "BASE64_KEY_HERE"
+  ota_password: "OTA_PASSWORD_HERE"
+
+packages:
+  remote:
+    url: https://github.com/loick111/esphome-common
+    ref: master
+    refresh: always
+    files:
+      - common/base.yaml
+      - common/boards/esp32s3.yaml
+      - common/mixins/wifi.yaml
+      - common/packages/air-quality.yaml
+
+# Hardware Definitions (if not fully covered by board preset)
+i2c:
+  sda: 12
+  scl: 13
+  scan: true
 ```
 
 ## Project Structure
