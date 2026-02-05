@@ -11,6 +11,17 @@ esphome:
     name: 'loick111.air-quality'
     version: 'v1'
 
+# Hardware Definition
+i2c:
+  sda: ${pin_i2c_sda}
+  scl: ${pin_i2c_scl}
+  scan: true
+uart:
+  rx_pin: ${pin_uart_rx}
+  baud_rate: 9600
+  parity: NONE
+  stop_bits: 1
+
 number:
   - platform: template
     entity_category: config
