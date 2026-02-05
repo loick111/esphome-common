@@ -1,0 +1,16 @@
+# BLE Proxy
+# Dedicated device configuration for Bluetooth Low Energy tracking and proxy capabilities
+# No hardware configuration (ESP32 variant/framework) - handled by instance files
+
+substitutions:
+  # Device Identity Defaults
+  devicename: ble-proxy-${uniqueid}
+
+esphome:
+  project:
+    name: 'loick111.ble-proxy'
+    version: 'v1'
+
+packages:
+  # Core Functionality
+  ble_proxy: !include ../common/mixins/ble-proxy.yaml

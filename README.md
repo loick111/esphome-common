@@ -6,61 +6,42 @@ A shared collection of reusable ESPHome configuration components organized by re
 
 This repository follows a **strict 5-layer architecture**:
 
-| Layer | Location | Purpose |
-| :--- | :--- | :--- |
-| **Infrastructure** | `common/base.yaml` | Core services (Logging, API, OTA, WiFi AP, Diagnostics) |
-| **Board Presets** | `common/boards/` | Hardware standardization (GPIO pins, I2C/UART setup) |
-| **Mixins** | `common/mixins/` | Optional side features (BLE Proxy, WiFi Station, Web Server) |
-| **Packages** | `common/packages/` | Core business logic (Sensors, automations) |
-| **Instances** | `examples/` | Device composition and identity |
+| Layer              | Location           | Purpose                                                      |
+| :----------------- | :----------------- | :----------------------------------------------------------- |
+| **Infrastructure** | `common/base.yaml` | Core services (Logging, API, OTA, WiFi AP, Diagnostics)      |
+| **Board Presets**  | `common/boards/`   | Hardware standardization (GPIO pins, I2C/UART setup)         |
+| **Mixins**         | `common/mixins/`   | Optional side features (BLE Proxy, WiFi Station, Web Server) |
+| **Packages**       | `common/packages/` | Core business logic (Sensors, automations)                   |
+| **Instances**      | `examples/`        | Device composition and identity                              |
 
 ## Usage
 
-### Local Usage (Quick Start)
+### Remote Usage (Recommended)
 
-Create an instance file that composes layers:
-
-```yaml
-# examples/my-device.yaml
-substitutions:
-  uniqueid: my-device-001
-  api_key: 'YOUR_API_KEY_HERE'
-  ota_password: 'YOUR_OTA_PASSWORD'
-
-packages:
-  board: !include ../common/boards/esp32dev.yaml
-  base: !include ../common/base.yaml
-  wifi: !include ../common/mixins/wifi.yaml
-  business_logic: !include ../common/packages/water-meter.yaml
-
-esphome:
-  name: ${devicename}
-```
-
-### External Usage (Remote Packages)
-
-You can use these components in devices outside this repository using the `remote` package feature. This allows you to maintain a separate device configuration while leveraging the shared logic.
-
-**Prerequisites:**
-1. Define **Identity & Secrets** locally (substitutions).
-2. Define **Hardware** locally (or import a board preset).
-3. Import **Base & Logic** from the remote repo.
+The preferred way to use this repository is as a remote package. This allows you to leverage the shared logic while maintaining your device configurations in their own repositories.
 
 ```yaml
+# my-device.yaml
 substitutions:
   # Device Identity
-  uniqueid: "device-001"
-  devicename: my-device-${uniqueid}
+  uniqueid: 'device-001'
 
-  # Secrets (Must be in your local secrets.yaml)
-  wifi_ssid: !secret wifi_ssid
-  wifi_password: !secret wifi_password
+  # WiFi Credentials
+  # Define these subtitutions only if you want to override the defaults
+  # wifi_ssid: !secret wifi_ssid
+  # wifi_password: !secret wifi_password
+  # wifi_captive: !secret wifi_captive
+
+  # ESPHome Access
+  # Generate a 32-byte base64 key for API encryption, e.g. using `openssl rand -base64 32`
+  api_key: 'BASE64_KEY_HERE'
   web_password: !secret web_password
-  wifi_captive: !secret wifi_captive
+  # Use a strong password for OTA updates, e.g. `openssl rand -base64 16`
+  ota_password: 'OTA_PASSWORD_HERE'
 
-  # Security
-  api_key: "BASE64_KEY_HERE"
-  ota_password: "OTA_PASSWORD_HERE"
+  # Water Meter Specific
+  pulse_gpio: GPIO4
+  pulse_timeout: 10s
 
 packages:
   remote:
@@ -69,15 +50,39 @@ packages:
     refresh: always
     files:
       - common/base.yaml
-      - common/boards/esp32s3.yaml
+      - common/boards/esp32dev.yaml
       - common/mixins/wifi.yaml
-      - common/packages/air-quality.yaml
+      - common/mixins/ble-proxy.yaml
+```
 
-# Hardware Definitions (if not fully covered by board preset)
-i2c:
-  sda: 12
-  scl: 13
-  scan: true
+### Local Usage (Development & Testing)
+
+Use local includes when contributing to this library or validating changes against the `examples/` directory.
+
+```yaml
+# examples/my-device.yaml
+substitutions:
+  # Device Identity
+  uniqueid: 'device-001'
+
+  # WiFi Credentials
+  # Define these subtitutions only if you want to override the defaults
+  # wifi_ssid: !secret wifi_ssid
+  # wifi_password: !secret wifi_password
+  # wifi_captive: !secret wifi_captive
+
+  # ESPHome Access
+  # Generate a 32-byte base64 key for API encryption, e.g. using `openssl rand -base64 32`
+  api_key: 'BASE64_KEY_HERE'
+  web_password: !secret web_password
+  # Use a strong password for OTA updates, e.g. `openssl rand -base64 16`
+  ota_password: 'OTA_PASSWORD_HERE'
+
+packages:
+  - !include ../common/boards/esp32dev.yaml
+  - !include ../common/base.yaml
+  - !include ../common/mixins/wifi.yaml
+  - !include ../common/mixins/ble-proxy.yaml
 ```
 
 ## Project Structure

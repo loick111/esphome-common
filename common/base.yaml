@@ -6,9 +6,12 @@
 substitutions:
   # Logging level (can be overridden in instances)
   log_level: INFO
-  
+
+  # API Reboot Timeout (can be overridden in instances)
+  api_reboot_timeout: 15min
+
   # Web Server credentials (can be overridden in instances)
-  web_username: admin
+  web_username: !secret web_username
   web_password: !secret web_password
 
 esphome:
@@ -18,6 +21,7 @@ logger:
   level: ${log_level}
 
 api:
+  reboot_timeout: ${api_reboot_timeout}
   encryption:
     key: ${api_key}
 
