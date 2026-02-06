@@ -59,23 +59,29 @@ sensor:
   # Diagnostics
   - platform: uptime
     name: 'Uptime'
+    id: uptime
     entity_category: diagnostic
   - platform: wifi_signal
     name: 'WiFi Signal'
+    id: wifi_signal
     update_interval: 60s
     entity_category: diagnostic
   - platform: internal_temperature
     name: 'Internal Temperature'
+    id: internal_temperature
     entity_category: diagnostic
 
 text_sensor:
   - platform: wifi_info
     ip_address:
       name: 'IP Address'
+      id: wifi_ip_address
       entity_category: diagnostic
     bssid:
       name: 'WiFi BSSID'
+      id: wifi_bssid
       entity_category: diagnostic
     ssid:
       name: 'WiFi SSID'
+      id: wifi_ssid
       entity_category: diagnostic
