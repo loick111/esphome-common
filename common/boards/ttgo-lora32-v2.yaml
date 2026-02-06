@@ -11,6 +11,11 @@ substitutions:
   pin_sx1278_rst: GPIO14
   pin_sx1278_irq: GPIO26
 
+esp32:
+  board: ttgo-lora32-v2
+  framework:
+    type: esp-idf
+
 i2c:
   scl: ${pin_oled_scl}
   sda: ${pin_oled_sda}
