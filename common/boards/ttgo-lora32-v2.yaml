@@ -1,0 +1,82 @@
+substitutions:
+  # Display SSD1306
+  pin_oled_scl: GPIO22
+  pin_oled_sda: GPIO21
+
+  # LoRa SX1278
+  pin_sx1278_sck: GPIO5
+  pin_sx1278_miso: GPIO19
+  pin_sx1278_mosi: GPIO27
+  pin_sx1278_cs: GPIO18
+  pin_sx1278_rst: GPIO14
+  pin_sx1278_irq: GPIO26
+
+i2c:
+  scl: ${pin_oled_scl}
+  sda: ${pin_oled_sda}
+  frequency: 400kHz
+
+spi:
+  clk_pin: ${pin_sx1278_sck}
+  miso_pin: ${pin_sx1278_miso}
+  mosi_pin: ${pin_sx1278_mosi}
+
+display:
+  platform: ssd1306_i2c
+  model: 'SSD1306 128x64'
+  address: 0x3C
+  id: screen
+
+# https://esphome.io/components/sx127x/
+sx127x:
+  id: lora_radio
+
+  cs_pin: ${pin_sx1278_cs}
+  rst_pin: ${pin_sx1278_rst}
+  dio0_pin: ${pin_sx1278_irq}
+
+  # Enable automatic image calibration on temperature changes.
+  # Defaults to true.
+  # auto_cal: true
+
+  # Frequency in Hz of the transceiver
+  frequency: 433.92MHz
+
+  # Modulation can be OOK, FSK or LORA.
+  modulation: FSK
+
+  # Transmitter output pin, can be BOOST or RFO.
+  # pa_pin: ?
+
+  # Transmitter power, range is from 2 to 17 dBm when pa_pin is BOOST and 0 to 15 dBm when using RFO.
+  # pa_power: ?
+
+  # Transmitter PA ramp, can be:
+  # 10us, 12us, 15us, 20us, 25us, 31us, 40us, 50us, 62us,
+  # 100us, 125us, 250us, 500us, 1000us, 2000us or 3400us.
+  # pa_ramp: ?
+
+  # Start the receiver automatically on boot or after transmitting.
+  # rx_start: ?
+
+  # Bandwidth can be:
+  # 2_6kHz, 3_1kHz, 3_9kHz, 5_2kHz, 6_3kHz, 7_8kHz, 10_4kHz, 12_5kHz,
+  # 15_6kHz, 20_8kHz, 25_0kHz, 31_3kHz, 41_7kHz, 50_0kHz, 62_5kHz,
+  # 83_3kHz, 100_0kHz, 125_0kHz, 166_7kHz, 200_0kHz or 250_0kHz.
+  bandwidth: 50_0kHz
+
+  # In packet mode bytes are sent via the send_packet automation and received with the on_packet trigger.
+  # If not enabled continuous mode is used and raw data is sent and received on DIO2.
+  packet_mode: true
+
+  # Length of the payload in packet mode.
+  # If not configured then the variable length packet format is used.
+  # Maximum length is 64.
+  # payload_length: ?
+
+  # Enables a 16 bit CRC calculation/check in packet mode.
+  crc_enable: false
+
+  bitsync: true
+  rx_start: true
+  rx_floor: -90
